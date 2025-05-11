@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1064783509603",
+    "project_id": "checkers-923c8",
+    "storage_bucket": "checkers-923c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1064783509603:android:cade88eeb1829039682056",
+        "android_client_info": {
+          "package_name": "com.example.chessclub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9SwPm9YU9pNbq1BcG-6NH90HecpvEyLo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
