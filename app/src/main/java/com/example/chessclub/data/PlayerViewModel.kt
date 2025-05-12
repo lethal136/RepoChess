@@ -3,6 +3,7 @@ package com.example.chessclub.data
 import android.app.AlertDialog
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -14,6 +15,7 @@ import com.example.chessclub.navigation.ROUTE_VIEW_PLAYERS
 import com.example.chessclub.network.ImgurService
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseException
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +32,7 @@ import java.io.File
 
 class PlayerViewModel:ViewModel(){
     private val database = FirebaseDatabase.getInstance().reference.child("Players")
+    private var valueEventListener: ValueEventListener? = null // Add this declaration
 
     private fun getImgurService(): ImgurService{
         val logging = HttpLoggingInterceptor()
@@ -39,7 +42,7 @@ class PlayerViewModel:ViewModel(){
             .addInterceptor(logging)
             .build()
 
-    val retrofit = Retrofit.Builder().baseUrl("http://api.imgur.com/")
+    val retrofit = Retrofit.Builder().baseUrl("https://api.imgur.com/")
         .addConverterFactory(
         GsonConverterFactory.create()).client(client)
         .build()
@@ -67,7 +70,8 @@ class PlayerViewModel:ViewModel(){
         gender: String,
         nationality:String,
         username: String,
-        desc: String
+        desc: String,
+        navController: NavController // Add NavController parameter
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -100,6 +104,7 @@ class PlayerViewModel:ViewModel(){
                             viewModelScope.launch {
                                 withContext(Dispatchers.Main) {
                                     Toast.makeText(context, "Player saved successfully", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(ROUTE_VIEW_PLAYERS)
 
                                 }
                             }
@@ -130,91 +135,38 @@ class PlayerViewModel:ViewModel(){
 
 
     fun viewPlayers(
-
-
         player: MutableState<PlayerModel>,
-
-
         players: SnapshotStateList<PlayerModel>,
-
-
-        context: Context
-
-
+        context: Context,
+        onDataLoaded: () -> Unit // Added callback parameter
     ): SnapshotStateList<PlayerModel> {
-
-
         val ref = FirebaseDatabase.getInstance().getReference("Players")
 
-
-
-
-
-        ref.addValueEventListener(object: ValueEventListener {
-
-
+        val valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-
-
                 players.clear()
-
-
                 for (snap in snapshot.children) {
-
-
-                    val value = snap.getValue(PlayerModel::class.java)
-
-
-                    value?.let {
-
-
-                        players.add(it)
-
-
+                    try {
+                        val value = snap.getValue(PlayerModel::class.java)
+                        value?.let { players.add(it) }
+                    } catch (e: DatabaseException) {
+                        Log.e("PlayerViewModel", "Failed to deserialize player at ${snap.key}: ${e.message}")
                     }
-
-
                 }
-
-
                 if (players.isNotEmpty()) {
-
-
                     player.value = players.first()
-
-
                 }
-
-
+                onDataLoaded() // Notify that data loading is complete
             }
-
-
-
-
 
             override fun onCancelled(error: DatabaseError) {
-
-
                 Toast.makeText(context, "Failed to fetch players: ${error.message}", Toast.LENGTH_SHORT).show()
-
-
-
-
-
+                onDataLoaded() // Notify even if there’s an error
             }
-
-
-        })
-
-
-
-
+        }.also { ref.addValueEventListener(it) }
 
         return players
-
-
     }
-
 
     fun updatePlayer(
         context: Context, navController: NavController,

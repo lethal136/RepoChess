@@ -113,7 +113,7 @@ fun AddplayerScreen(navController: NavController){
         Row (modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween){
             Button(onClick = {}, colors = ButtonDefaults.buttonColors(Color.Black)) { Text(text = "Dashboard") }
-            Button(onClick = { navController.navigate(ROUTE_VIEW_PLAYERS)
+            Button(onClick = {
                 imageUri.value?.let {
                     playerViewModel.uploadPlayerWithImage(
                         it,
@@ -122,7 +122,8 @@ fun AddplayerScreen(navController: NavController){
                         gender,
                         nationality,
                         username,
-                        description
+                        description,
+                        navController = navController
                     )
                 } ?: Toast.makeText(context, "please pick an image", Toast.LENGTH_LONG).show()
             }, colors = ButtonDefaults.buttonColors(Color.Gray)) { Text(text = "Save") }

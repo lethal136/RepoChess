@@ -5,13 +5,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.chessclub.ui.screens.ViewPlayersScreen
 import com.example.chessclub.ui.theme.screens.SplashScreen
 import com.example.chessclub.ui.theme.screens.home.HomeScreen
 import com.example.chessclub.ui.theme.screens.login.LoginScreen
 import com.example.chessclub.ui.theme.screens.register.Registerscreen
 import com.example.chessclub.ui.theme.screens.players.AddplayerScreen
 import com.example.chessclub.ui.theme.screens.players.UpdatePlayerScreen
-import com.example.chessclub.ui.theme.screens.players.ViewPlayers
+//import com.example.chessclub.ui.theme.screens.players.ViewPlayers
 
 @Composable
 fun AppNavHost(navController: NavHostController= rememberNavController(),startDestination: String= ROUTE_SPLASH){
@@ -24,6 +25,6 @@ fun AppNavHost(navController: NavHostController= rememberNavController(),startDe
         composable(ROUTE_HOME) { HomeScreen(navController) }
         composable(ROUTE_ADD_PLAYER) { AddplayerScreen(navController) }
         composable(ROUTE_UPDATE_PLAYER) { UpdatePlayerScreen(navController) }
-        composable(ROUTE_VIEW_PLAYERS) { ViewPlayers(navController) }
+        composable(ROUTE_VIEW_PLAYERS) { ViewPlayersScreen(navController) }
     }
 }

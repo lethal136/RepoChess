@@ -1,191 +1,196 @@
-package com.example.chessclub.ui.theme.screens.players
+package com.example.chessclub.ui.screens
 
-import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.chessclub.data.PlayerViewModel
 import com.example.chessclub.models.PlayerModel
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.navigation.NavHostController
 import com.example.chessclub.navigation.ROUTE_UPDATE_PLAYER
-import com.example.chessclub.navigation.ROUTE_VIEW_PLAYERS
 
-
-@SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun ViewPlayers(navController: NavHostController){
+fun ViewPlayersScreen(
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val playerRepository = PlayerViewModel()
-    val emptyUploadState = remember {
-        mutableStateOf(
-            PlayerModel("","","","","","")
-        )
+    val players = remember { SnapshotStateList<PlayerModel>() }
+    val selectedPlayer = remember { mutableStateOf(PlayerModel()) }
+    var isDataLoaded by remember { mutableStateOf(false) }
+
+    // Fetch players when the composable is created
+    LaunchedEffect(Unit) {
+        playerViewModel.viewPlayers(selectedPlayer, players, context) {
+            isDataLoaded = true
+        }
     }
-    val emptyUploadListState = remember {
-        mutableStateListOf<PlayerModel>()
-    }
-    val players = playerRepository.viewPlayers(
-        emptyUploadState,emptyUploadListState, context)
-    Column (modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally){
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "All Players",
-                fontSize = 30.sp,
-                fontFamily = FontFamily.SansSerif,
-                color= Color.Black)
-            Spacer(modifier = Modifier.height(20.dp))
 
-            LazyColumn{
-                items(players){
-                    PlayerItem(
-                        name = it.name,
-                        gender = it.gender,
-                        nationality = it.nationality,
-                        username = it.username,
-                        desc = it.desc,
-                        playerId = it.playerId,
-                        imageUrl = it.imageUrl,
-                        navController = navController,
-                        playerRepository = playerRepository
-
-                    )
-                }
-
+    // Handle UI states
+    when {
+        !isDataLoaded -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Loading players...",
+                    modifier = Modifier.padding(top = 16.dp)
+                )
             }
+        }
+        players.isEmpty() -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "No players found")
+            }
+        }
+        else -> {
+            PlayersList(
+                players = players,
+                navController = navController,
+                playerViewModel = playerViewModel
+            )
         }
     }
 }
+
 @Composable
-fun PlayerItem(
-    name:String, gender:String, nationality:String, username:String,
-    desc: String, playerId:String, imageUrl: String, navController: NavHostController,
-    playerRepository: PlayerViewModel
-){
+fun PlayersList(
+    players: SnapshotStateList<PlayerModel>,
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(players) { player ->
+            PlayerCard(
+                player = player,
+                navController = navController,
+                playerViewModel = playerViewModel
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerCard(
+    player: PlayerModel,
+    navController: NavHostController,
+    playerViewModel: PlayerViewModel
+) {
     val context = LocalContext.current
-    Column (modifier = Modifier.fillMaxWidth()){
-        Card (modifier = Modifier
-            .padding(10.dp)
-            .height(210.dp),
-            shape = MaterialTheme.shapes.medium,
-            colors = CardDefaults.cardColors
-                (containerColor = Color.Gray))
-        {
-            Row {
-                Column {
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(150.dp)
-                            .padding(10.dp)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Player Image with rounded corners
+                Image(
+                    painter = rememberAsyncImagePainter(model = player.imageUrl),
+                    contentDescription = "${player.name}'s profile image",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .align(Alignment.CenterVertically)
+                )
+
+                // Player Details
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = player.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
-
-                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                        Button(onClick = {
-                            playerRepository.deletePlayer(context,playerId,navController)
-
-                        },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(Color.Red)
-                        ) {
-                            Text(text = "REMOVE",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp)
-                        }
-                        Button(onClick = {
-                            navController.navigate("$ROUTE_VIEW_PLAYERS/$playerId")
-                        },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(Color.Green)
-                        ) {
-                            Text(text = "UPDATE",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp)
-                        }
-                    }
-
+                    Text(
+                        text = "Username: ${player.username}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Nationality: ${player.nationality}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Gender: ${player.gender}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = player.desc,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-                Column (modifier = Modifier
-                    .padding(vertical = 10.dp, horizontal = 10.dp)
-                    .verticalScroll(rememberScrollState())){
-                    Text(text = "PLAYER NAME",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = name,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = "PLAYER GENDER",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = gender,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = "PLAYER NATIONALITY",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = nationality,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = "PLAYER USERNAME",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = username,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = "PLAYER DESC",
-                        color = Color.Black,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold)
-                    Text(text = desc,
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold)
+            }
+
+            // Action Buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = { navController.navigate(ROUTE_UPDATE_PLAYER)},
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Edit player",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(
+                    onClick = { playerViewModel.deletePlayer(context, player.playerId, navController) },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete player",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }

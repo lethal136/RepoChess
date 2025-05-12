@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -125,10 +126,10 @@ fun HomeScreen(navController: NavController) {
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
+//                        Icon(
+//                            imageVector = Icons.Filled.Search,
+//                            contentDescription = "Search"
+//                        )
                         IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Filled.Menu,
@@ -153,7 +154,11 @@ fun HomeScreen(navController: NavController) {
             )
             Row {
                 Card(
-                    modifier = Modifier.padding(10.dp).clickable {
+                    modifier = Modifier
+                        .size(width = 300.dp, height = 200.dp) // Increase size
+                        .fillMaxSize() // Fill the entire screen
+
+                        .clickable {
                         navController.navigate(ROUTE_ADD_PLAYER)
                     },
                     shape = RoundedCornerShape(20.dp),
@@ -163,6 +168,7 @@ fun HomeScreen(navController: NavController) {
                 {
                     Box(
                         modifier = Modifier
+                            .fillMaxSize()
                             .height(100.dp)
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
@@ -173,45 +179,45 @@ fun HomeScreen(navController: NavController) {
                         )
                     }
                 }
-                Card(
-                    modifier = Modifier.padding(10.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(10.dp),
-                    colors = CardDefaults.cardColors(Color.Black)
-                )
-                {
-                    Box(
-                        modifier = Modifier
-                            .height(100.dp)
-                            .padding(25.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "About Chess",
-                            color = Color.White
-                        )
-                    }
-                }
-                Card(
-                    modifier = Modifier.padding(10.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(10.dp),
-                    colors = CardDefaults.cardColors(Color.Black)
-                )
-                {
-                    Box(
-                        modifier = Modifier
-                            .height(100.dp)
-                            .padding(25.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Fee",
-                            color = Color.White
-                        )
-                    }
-
-                }
+//                Card(
+//                    modifier = Modifier.padding(10.dp),
+//                    shape = RoundedCornerShape(20.dp),
+//                    elevation = CardDefaults.cardElevation(10.dp),
+//                    colors = CardDefaults.cardColors(Color.Black)
+//                )
+//                {
+//                    Box(
+//                        modifier = Modifier
+//                            .height(100.dp)
+//                            .padding(25.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Text(
+//                            text = "About Chess",
+//                            color = Color.White
+//                        )
+//                    }
+//                }
+//                Card(
+//                    modifier = Modifier.padding(10.dp),
+//                    shape = RoundedCornerShape(20.dp),
+//                    elevation = CardDefaults.cardElevation(10.dp),
+//                    colors = CardDefaults.cardColors(Color.Black)
+//                )
+//                {
+//                    Box(
+//                        modifier = Modifier
+//                            .height(100.dp)
+//                            .padding(25.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Text(
+//                            text = "Fee",
+//                            color = Color.White
+//                        )
+//                    }
+//
+//                }
             }
         }
     }
